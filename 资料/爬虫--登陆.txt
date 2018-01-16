@@ -1,0 +1,15 @@
+使用Python模拟参数传递过程。
+
+客户端与服务端通信过程的几个关键点：
+
+登录时的url地址。
+
+登录时提交的参数【params】，获取方式主要有两种：第一、分析页面源代码，找到表单标签及属性。适应比较简单的页面。第二、使用抓包工具，查看提交的url和参数，通常使用的是Chrome的开发者工具中的Network， Fiddler等。
+
+登录后跳转的url。
+
+https://zhuanlan.zhihu.com/p/28587931
+
+分析加密：
+
+http://www.cnblogs.com/masako/p/7403726.html

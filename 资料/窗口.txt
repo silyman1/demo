@@ -1,0 +1,13 @@
+上述代码会打开浏览器界面,若不想看到界面,可采用以下手段:
+
+复制代码
+if __name__ == "__main__":
+
+    from pyvirtualdisplay import Display
+
+    display = Display(visible=0, size=(1366, 768))
+    display.start()
+    user = "Masako"
+    pw = "*****"
+    login(user, pw)
+    display.stop()
