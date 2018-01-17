@@ -35,9 +35,10 @@ for title in titles:
 textarea = soup.find('textarea').text
 i = 1
 contents = json.loads(str(textarea))
-fo = open('test.log','w')
+print len(contents)
+fo = open('wangyi.log','w')
 sys.stdout = fo
-for a in range(195):
+for a in range(len(contents)):
 	t1 = time.localtime(contents[a].get('publishTime')/1000)
 	t2 = time.strftime("%Y-%m-%d %H:%M:%S",t1)
 	
