@@ -20,7 +20,7 @@ def gihub_login(url,token,cookie):
 	"utf8":"✓",
 	"authenticity_token":token,
 	"login":"1161626597@qq.com",
-	"password":"********"#密码
+	"password":"pzc1161626597"#密码
 	}
 	response = requests.post(url,data=data,cookies=cookie)
 	print(response.status_code)
