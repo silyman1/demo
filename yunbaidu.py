@@ -107,7 +107,7 @@ class BaiduYun_login(object):
 				'traceid':'0894FE01',
 				'callback':'parent.bd__pcbs__3dkzwl',
 				}
-		resp = self.session.get('https://passport.baidu.com/v2/api/?login',headers=self.headers,data = post_data)
+		resp = self.session.post('https://passport.baidu.com/v2/api/?login',headers=self.headers,data = post_data)
 		print resp.text
 		if resp.status_code == 200:
 			print 'login successfully'
