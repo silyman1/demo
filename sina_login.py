@@ -13,9 +13,9 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 class SinaLogin(object):
-	def __init__(self,username,password):
-		self.username = username
-		self.password =password
+	def __init__(self):
+		self.username = ''
+		self.password =''
 		self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36',
 						'Referer':'https://login.sina.com.cn/signup/signin.php'}
 
@@ -46,10 +46,13 @@ class SinaLogin(object):
 		Pubkey = int(pubkey, 16)
 		rsa_n = int('10001',16)
 		rsakey = rsa.PublicKey(Pubkey, rsa_n) #创建公钥
-		codeStr = str(servertime) + '\t' + str(nonce) + '\n' + str(password) #根据js拼接方式构造明文
+		codeStr = str(servertime) + '\t' + str(nonce) + '\n' + str(self.password) #根据js拼接方式构造明文
 		pwd = rsa.encrypt(codeStr,rsakey)  #使用rsa进行加密
 		return binascii.hexlify(pwd)  #将加密信息转换为16进制。
-	def login(self,servertime,nonce,rsakv,pubkey):
+	def login(self):
+		self.username = raw_input("username:")
+		self.password = raw_input("password:")
+		servertime,nonce,pubkey,rsakv = self.getpostdata()
 		prelt = random.randint(40, 100)
 		su = self.encode_su()
 		sp = self.encode_sp(pubkey, servertime, nonce)
@@ -85,6 +88,9 @@ class SinaLogin(object):
 					'returntype':'TEXT'
         }
 		response = self.session.post('https://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.4.15)',data =post_data,allow_redirects=False)
+		if response.status_code != 200:
+			print 'login failed'
+			response.raise_for_status()
 		jsondata = json.loads(response.text)
 		uid = jsondata.get('uid')
 		url2 = jsondata.get('crossDomainUrlList')[0]
@@ -128,13 +134,8 @@ class SinaLogin(object):
 			return True
 		return False
 if __name__ == "__main__":
-
-	username = raw_input("username:")
-	password = raw_input("password:")
-	sinalogin = SinaLogin(username, password)
-
-	servertime,nonce,pubkey,rsakv = sinalogin.getpostdata()
-	sinalogin.login(servertime, nonce, rsakv, pubkey)
+	sinalogin = SinaLogin()
+	sinalogin.login()
 	sinalogin.get_myfollow()
 	# print s.status_code,'3333333'
 	# print s.text.decode('utf-8').encode('gbk','ignore')

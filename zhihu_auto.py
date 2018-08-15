@@ -18,7 +18,7 @@ try:
 except:
 	img= browser.find_element_by_xpath('//*[@id="root"]/div/main/div/div/div/div[2]/div[1]/form/div[3]/div/span/div/img').get_attribute("src")
 	sleep(10)
-else:
+finally:
 	pass
 browser.find_element_by_xpath('//*[@id="root"]/div/main/div/div/div/div[2]/div[1]/form/button').submit()#登录
 sleep(5)#等待Cookies加载
