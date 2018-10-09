@@ -19,9 +19,11 @@ class SinaLogin(object):
 		self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36',
 						'Referer':'https://login.sina.com.cn/signup/signin.php'}
 
-		self.uid = 0					
+		self.uid = 0
 		self.session = requests.session()
+
 		self.s = self.session.get('http://login.sina.com.cn',headers=self.headers)
+		self.following_list = []
 		if(self.s.status_code == 200):
 			print 'init session successfully'
 	def getpostdata(self):
@@ -108,29 +110,30 @@ class SinaLogin(object):
 		flag = True
 		i =1
 		while flag:
-			f = open('sina%d.txt'%i,'w+')
-			__stdout__ = sys.stdout
-			sys.stdout = f
+
 			page_url = 'https://weibo.com/p/{}/myfollow?t=1&cfs=&Pl_Official_RelationMyfollow__92_page={}#Pl_Official_RelationMyfollow__92'.format(str(page_id),str(i))
 			home_page = self.session.get(page_url).text
 
-			print '==========================='
-			print home_page.encode('gbk','ignore')
-			sys.stdout = __stdout__
-			f.close()
+
 			flag = self.parse_myfollow(home_page)
 			i = i+1
+		return self.following_list
 	def parse_myfollow(self,html):
 		# soup = BeautifulSoup(html,'lxml')
 		# print soup.title
 
 		# following_list = soup.find_all('div',attrs={"class":"title W_fb W_autocut"})
 		pattern = re.compile(r'<div class=\\"title W_fb W_autocut \\".*?title=\\"(.*?)\\".*?>',re.S)
+		pattern2 = re.compile(r'class=\\"pic_box\\".*?img src=\\"(.*?)"')
 		following_list = re.findall(pattern, html)
-
+		avator_list = re.findall(pattern2, html)
 		if following_list:
-			for item in following_list:
+			for item,avatar in zip(following_list,avator_list):
 				print item
+				avatar = 'https:' + str(avatar.replace('\\',''))
+				print avatar
+				self.following_list.append((item,avatar))
+				
 			return True
 		return False
 if __name__ == "__main__":
