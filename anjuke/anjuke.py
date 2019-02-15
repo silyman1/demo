@@ -9,9 +9,10 @@ sys.setdefaultencoding('utf-8')
 class Anjuke(object):
 	def __init__(self,):
 		self.count = 0 
-		self.headers = {,
+		self.headers = {
             'User-Agent':'Mozilla/5.0 (Linux; U; Android 4.1.2; zh-cn; Chitanda/Akari) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30 MicroMessenger/6.0.0.58_r884092.501 NetType/WIFI'
          }
+		self.proxies = {'http':'https://121.61.0.33:9999',"https":'https://121.61.0.33:9999'}
 		self.mysign = True
 		#https://suzhou.anjuke.com/community
 		self.rawurl = 'https://ks.anjuke.com/community/'
@@ -20,10 +21,11 @@ class Anjuke(object):
 		i = 1
 		while self.mysign:
 			page_url = self.rawurl + 'p' + str(i)
-			rep = requests.get(page_url,headers = self.headers,verify=False)
-			print rep.text
+			rep = requests.get(page_url,headers = self.headers,verify=False,timeout=2)
+
 			soup = BeautifulSoup(rep.text,'lxml')
-			results = soup.find_all('div',attrs={'_soj':'xqlb'})
+			results = soup.find_all('ul',attrs={'class':'regionlist'})
+			print results
 			if results:
 				for result in results:
 					self.count +=1
