@@ -18,7 +18,7 @@ class Anjuke(object):
 		self.count = 0
 		self.wcount = 0
 		self.mylock = Lock()
-		self.csvfile = file('ks.csv','wb')
+		self.csvfile = file('sz.csv','a')#ks.csv
 		self.csvfile.write(codecs.BOM_UTF8)
 		self.item_queue = Queue()
 		self.headers = {
@@ -27,7 +27,7 @@ class Anjuke(object):
 		self.proxies = {'http':'https://121.61.0.33:9999',"https":'https://121.61.0.33:9999'}
 		self.mysign = True
 		#https://suzhou.anjuke.com/community
-		self.rawurl = 'https://ks.anjuke.com/community/'
+		self.rawurl = 'https://suzhou.anjuke.com/community/'
 		self.urlmanager = UrlManager()
 	def get_villages(self):
 		rep = requests.get(self.rawurl,headers = self.headers,verify=False,timeout=2)
@@ -40,8 +40,8 @@ class Anjuke(object):
 				continue
 			vurl = item.get('href')
 			print vurl
-			# self.get_villages2(vurl)
-			self.get_villages3(vurl)
+			self.get_villages2(vurl)
+			#self.get_villages3(vurl)
 			print '======================================'
 		self.urlmanager.save_urls_process_status(self.urlmanager.new_urls,r'new_urls.txt')
 		self.urlmanager.save_urls_process_status(self.urlmanager.crawled_urls,r'crawled_urls.txt')
@@ -73,10 +73,20 @@ class Anjuke(object):
 			else:
 				url = next_item.get('href')
 		# time.sleep(1)
-	def get_detail(self,c_url,item_queue):
+	def get_detail(self,c_url):
 		rlist=[]
 		# item ={}
-		rep = requests.get(c_url,headers = self.headers,verify=False)
+		try:
+			rep = requests.get(c_url,headers = self.headers,verify=False,timeout = 4)
+		except:
+			print 'current:urls num2:',self.urlmanager.new_urls_size()
+			self.urlmanager.readd_new_url(c_url)
+			return
+		if rep.url.startswith('https://www.anjuke.com/captcha-verify/'):
+			self.urlmanager.readd_new_url(c_url)
+			self.urlmanager.save_urls_process_status(self.urlmanager.new_urls,r'new_urls.txt')
+			self.urlmanager.save_urls_process_status(self.urlmanager.crawled_urls,r'crawled_urls.txt')
+			return
 		print rep.url
 		soup = BeautifulSoup(rep.text,'lxml')
 		name = soup.find('h1')
@@ -86,14 +96,21 @@ class Anjuke(object):
 		rlist.append(addr.string.decode("utf-8"))
 		village = re.search("(.*?)-.*?",addr.string).group(1)
 		try:
-			y,x = geocodeG(addr.string.replace(village,'昆山'))
+			y,x = geocodeG(addr.string.replace(village,'苏州'))#昆山
 		except:
-			y,x = geocodeG(name.contents[0].strip().decode("utf-8"))
+			try:
+				y,x = geocodeG(name.contents[0].strip().decode("utf-8"))
+			except:
+				y,x = geocodeG(u'苏州'+village)#昆山
 		rlist.append(y)
 		rlist.append(x)
 		price = re.search('.*comm_midprice":"(.*?)"',rep.text)
-		print 'price:',price.group(1)
-		rlist.append(price.group(1))
+		if price ==None:
+			price = u'暂无报价'
+		else:
+			price = price.group(1)
+		print 'price:',price
+		rlist.append(price)
 		# item['price'] = price.group(1)
 		result = soup.find('dl',attrs={"class":'basic-parms-mod'})
 		for a in result.find_all('dd'):
@@ -109,7 +126,7 @@ class Anjuke(object):
 		print content.get('comm_propnum').get('rentNum'),content.get('comm_propnum').get('saleNum')
 		rlist.append(content.get('comm_propnum').get('rentNum'))
 		rlist.append(content.get('comm_propnum').get('saleNum'))
-		self.item_queue.put(rlist)
+		# self.item_queue.put(rlist)
 		return rlist
 		# item['property-type'] = value_list[0].string.strip().replace("：",'')
 		# item['property-cost'] = value_list[1].string.strip().replace("：",'')
@@ -137,12 +154,11 @@ class Anjuke(object):
 			self.mylock.release()
 	def write_to_csv3(self):
 		while not self.item_queue.empty():
-			csv_write = unicodecsv.writer(self.csvfile,encoding='utf-8-sig',dialect='excel')
 			item = self.item_queue.get()
-			csv_write = unicodecsv.writer(csvfile,encoding='utf-8-sig',dialect='excel')
+			csv_write = unicodecsv.writer(self.csvfile,encoding='utf-8-sig',dialect='excel')
 			self.wcount +=1
 			print 'write No.',self.wcount,'url'
-			csv_write.writerows(item)
+			csv_write.writerow(item)
 	def start2(self):
 		num = 0
 		self.get_villages()
@@ -167,27 +183,28 @@ class Anjuke(object):
 			# write_process = Process(target=self.write_to_csv2)
 			# write_process.start()
 	def start3(self):
+		# self.get_villages()
 		fo = open("anjuke.log",'w+')
 		s = sys.stdout
 		sys.stdout = fo
+		print 'current:urls num1:',self.urlmanager.new_urls_size()
 		while self.urlmanager.has_new_url():
 			newlist = []
-			flag = 16
+			flag = 100
 			while flag:
 				if self.urlmanager.has_new_url():
 					new_url = self.urlmanager.get_new_url()
 					newlist.append(new_url)
 					flag -=1
-			pool = threadpool.ThreadPool(16)
+				else:
+					break
+			pool = threadpool.ThreadPool(12)
 			requests = threadpool.makeRequests(self.get_detail,newlist)
-			try:
-				[pool.putRequest(req) for req in requests]
-			except:
-				print 'current:urls num2:',self.urlmanager.new_urls_size()
-				self.urlmanager.readd_new_url(new_url)
-				self.urlmanager.save_urls_process_status(self.urlmanager.new_urls,r'new_urls.txt')
-				self.urlmanager.save_urls_process_status(self.urlmanager.crawled_urls,r'crawled_urls.txt')
+			[pool.putRequest(req) for req in requests]
+
 			pool.wait()
+			self.urlmanager.save_urls_process_status(self.urlmanager.new_urls,r'new_urls.txt')
+			self.urlmanager.save_urls_process_status(self.urlmanager.crawled_urls,r'crawled_urls.txt')
 			self.write_to_csv3()
 		sys.stdout = s
 	def start(self):
@@ -199,8 +216,10 @@ class Anjuke(object):
 		print 'current:urls num1:',self.urlmanager.new_urls_size()
 		while self.urlmanager.has_new_url():
 			new_url = self.urlmanager.get_new_url()
+			self.urlmanager.save_urls_process_status(self.urlmanager.new_urls,r'new_urls.txt')
+			self.urlmanager.save_urls_process_status(self.urlmanager.crawled_urls,r'crawled_urls.txt')
 			try:
-				item = self.get_detail(new_url,self.item_queue)
+				item = self.get_detail(new_url)
 				num +=1
 				print 'write No.',num,'url'
 				self.write_to_csv(item)

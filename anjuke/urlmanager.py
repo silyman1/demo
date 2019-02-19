@@ -40,9 +40,6 @@ class UrlManager(object):
 		print 'get new url %s'%new_url
 		return new_url
 	def readd_new_url(self,url):
-		m = hashlib.md5()
-		m.update(url)
-		self.crawled_urls.remove(m.hexdigest()[8:-8])
 		self.add_new_url(url)
 	def add_new_url(self,url):
 		if url is None or len(url)==0:
@@ -51,7 +48,8 @@ class UrlManager(object):
 		m = hashlib.md5()
 		m.update(url)
 
-		if url in self.new_urls or m.hexdigest()[8:-8] in self.crawled_urls:
+		if url in self.new_urls: 
+		# or m.hexdigest()[8:-8] in self.crawled_urls
 			print u'%s is a repeating url'%url
 			return False
 		else:
