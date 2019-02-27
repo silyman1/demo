@@ -86,8 +86,8 @@ class MeituanHotel(object):
 	def test(self):
 		self.get_cities()
 		print '============================================================='
-		url = 'https://hotel.meituan.com/fuzhou/'
-		print self.id_dict['fuzhou']
+		url = 'https://hotel.meituan.com/xiamen/'
+		print self.id_dict['xiamen']
 		print '============================================================='
 		headers = {'User-Agent':random.choice(self.User_Agent_List)}
 		rep = requests.get(url,headers=headers)
@@ -112,7 +112,7 @@ class MeituanHotel(object):
 					print result.get('href')
 					self.url_list.append(result.get('href'))
 		for url in self.url_list:
-			self.get_items(url,'fuzhou')
+			self.get_items(url,'xiamen')
 		print 'testcount:',self.testcount
 	def start(self):
 		# self.get_cities()
