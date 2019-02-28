@@ -72,9 +72,9 @@ def get_file_content(file_path):
 # 利用百度ocr将图片转成文字
 def bai_du_ocr(white_picture_name):
 	""" 你的 APPID AK SK """
-	APP_ID = '15642693'
-	API_KEY = '8e9ualL4l8WPXXV12Ka17huK'
-	SECRET_KEY = 'eU6bbCL9k0ckNwPd2zdkTFCdKGLOD7Iu'
+	APP_ID = '15644846'
+	API_KEY = 'Nrt1euapOTyEq7jdvObTsujN'
+	SECRET_KEY = 'sMMmBOPT9Wc3WGItk8YljjkuidtZN66c'
 
 	client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
 
@@ -229,9 +229,12 @@ if __name__ == '__main__':
 	main_urls = ziru_get_urls(cityurl)
 	print '==================urls num:',len(main_urls)
 	flag = True
+	urlcount = 0
 	for one_url in main_urls:
-		if one_url == '//www.ziroom.com/z/nl/z2-d23008613-b18335729.html':
+		urlcount +=1
+		if one_url == '//www.ziroom.com/z/nl/z2-d23008615-b18335748.html':
 			flag =False
+			print 'urlcount:',urlcount
 		if flag:
 			continue
 	# 获取当前的url有多少页http://www.ziroom.com/z/nl/z2.html
