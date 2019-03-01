@@ -108,6 +108,8 @@ def get_detail(url):
 		myitem.append(name)
 		myitem.append(company)
 		for someitem in someitems:
+			if someitem == []:
+				continue
 			if someitem[0].startswith(name):
 				myitem.append(someitem[1])
 				myitem.append(someitem[2])
@@ -117,7 +119,7 @@ def get_detail2(rep):
 	# csvfile = file('gyscl2.csv','a')#ks.csv
 	# csvfile.write(codecs.BOM_UTF8)
 	someitems = []
-	soup = BeautifulSoup(rep)
+	soup = BeautifulSoup(rep,'lxml')
 	results = soup.find_all("span",attrs={"class":"J_zhaiyao"})
 	if results == None:
 		return someitems
@@ -166,9 +168,10 @@ if __name__ == "__main__":
 	csvfile.write(codecs.BOM_UTF8)
 	fo = open("gyscl.log",'w+')
 	s = sys.stdout
+	count = 0
 	sys.stdout = fo
 	flag =True
-	for page in range(1981,2019):
+	for page in range(1981,2000):
 		origin_url = 'http://www.iwt.cn/CN/article/showTenYearVolumnDetail.do?nian='+str(page)
 		print origin_url
 		urls_list = get_qikang_list(origin_url)
@@ -177,18 +180,23 @@ if __name__ == "__main__":
 			url = url.replace('..',astr)
 			zurls_list = get_zhaiyao(url)
 			for zurl in zurls_list:
+				count +=1
 				url = zurl.replace('..',astr)
 				print '=============',url
-			# if url == 'http://www.iwt.cn/CN/abstract/abstract15017.shtml':
-				# flag = False
-				# print 'go on'
-			# if flag:
-				# print 'pass'
-				# continue
-				# url = 'http://www.iwt.cn/CN/abstract/abstract12047.shtml'
-				items_list = get_detail(url)
-				write_csv(items_list,csvfile)
-				print '++++++++++++++++++'
+				if url == 'http://www.iwt.cn/CN/abstract/abstract13369.shtml':
+					flag = False
+					print 'go on'
+				if flag:
+					print 'pass'
+					continue
+				# url = 'http://www.iwt.cn/CN/abstract/abstract13983.shtml'
+				try:
+					items_list = get_detail(url)
+					write_csv(items_list,csvfile)
+					print '++++++++++++++++++count:',count
+				except:
+					with open('error.log','a') as er:
+						er.writelines(url)
 				# break
 			# break
 		# break
